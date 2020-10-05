@@ -71,5 +71,4 @@ app.use((error, req, res, next) => {
 })
 
 
-
-app.listen(data['port'])
+app.listen(process.env.PORT)
