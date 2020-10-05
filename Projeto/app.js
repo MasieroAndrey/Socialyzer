@@ -19,16 +19,16 @@ if (env == undefined) {
     env = 'dev';
 }
 
-let data;
+// let data;
 
-try {
-    let fileContents = fs.readFileSync('./src/resources/' + env + '.yaml', 'utf8');
-    data = yaml.safeLoad(fileContents);
+// try {
+//     let fileContents = fs.readFileSync('./src/resources/' + env + '.yaml', 'utf8');
+//     data = yaml.safeLoad(fileContents);
 
-    console.log(data['port']);
-} catch (e) {
-    console.log(e);
-}
+//     console.log(data['port']);
+// } catch (e) {
+//     console.log(e);
+// }
 
 
 const usuarios = require('./src/routes/usuarios.route');
@@ -70,5 +70,5 @@ app.use((error, req, res, next) => {
     res.status(error.httpStatusCode).json(error)
 })
 
-
-app.listen(process.env.PORT)
+var porta = process.env.PORT || 80
+app.listen(porta)
