@@ -65,5 +65,6 @@ app.use((error, req, res, next) => {
     res.status(error.httpStatusCode).json(error)
 })
 
-var porta = process.env.PORT || 80
+var porta = process.env.PORT || 3333
+console.log(porta)
 app.listen(porta)

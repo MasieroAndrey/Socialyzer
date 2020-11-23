@@ -7,23 +7,49 @@ module.exports = () => {
     const eventos = require('../data/eventos')
     const usuarios = require('../data/usuarios');
 
-     
-    controller.povoarInteresse = (req, res) =>{
+
+    const MongoClient = require('mongodb').MongoClient;
+
+    var collectionInteresse
+    const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+        if (err) { 
+            console.log(err) 
+        } 
+        const db = client.db('theminers')
+        collectionInteresse =db.collection('interesse')
+    });
+
+
+
+    controller.povoarInteresse = (req, res) => {
         povoar();
         res.status(200).json(interesses);
     }
-    controller.listarInteresse = (req, res) =>{
-        res.status(200).json(interesses);
+    controller.listarInteresse = (req, res) => {
+        collectionInteresse.find().toArray((err,interesses)=>{
+            res.status(200).json(interesses);
+        })
+       
 
-    } 
-   
+    }
+
     controller.salvarInteresse = (req, res) => {
         var interesse = new Interesse()
         var interesseobj = serialize.unserialize(interesse)
         interesseobj.IdInteresse = contador()
         interesseobj.NomeInteresse = req.body.NomeInteresse
-        
-        interesses.push(interesseobj)
+
+        collectionInteresse.insertOne(interesseobj,(err,result) =>{
+            if(err){
+                console.log(err)
+            }else{
+                console.log("salvou interesse")
+            }
+        })
+
+       
         res.status(200).send()
     };
 
@@ -32,16 +58,16 @@ module.exports = () => {
 
     controller.alterarInteresse = (req, res) => {
         const index = req.body.IdInteresse
-        interesses[index-1] = req.body
+        interesses[index - 1] = req.body
         res.status(200).send()
     };
     controller.excluirInteresse = (req, res) => {
         const index = req.body.IdInteresse
-        interesses.splice(index-1, 1)
+        interesses.splice(index - 1, 1)
         res.status(200).send()
     };
 
-    function povoar(){
+    function povoar() {
 
         var objinteresse = new Interesse()
         objinteresse.IdInteresse = contador()
@@ -85,7 +111,7 @@ module.exports = () => {
         interesses.push(objinteresse)
 
     }
-    function contador(){
+    function contador() {
         if (interesses.length == 0) {
             return 1
         } else {
