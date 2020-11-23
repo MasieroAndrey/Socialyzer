@@ -66,9 +66,10 @@ module.exports = () => {
         res.status(200).send()
     };
     controller.excluirInteresse = (req, res) => {
-        const index = req.body.IdInteresse
-        interesses.splice(index - 1, 1)
-        res.status(200).send()
+        collectionInteresse.deleteOne({_id: ObjectID(req.body._id)}, (err, item) => {
+            console.log(req.body)
+          })
+          res.status(200).send()
     };
 
     function povoar() {
