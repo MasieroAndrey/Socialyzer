@@ -16,11 +16,14 @@ usuarios.post('/upload', controllerUsuario.upload)
 
 
 usuarios.get('/', controllerUsuario.listarUsuarios)
+usuarios.get('/buscarNome/:nome', controllerUsuario.buscaUsarioNome)
+usuarios.get('/buscarEmail/:email', controllerUsuario.buscarUsuarioEmail)
+usuarios.get('/buscarCpf/:cpf', controllerUsuario.buscarUsuarioCpf)
 // usuarios.post('/', controllerUsuario.salvarUsuario)
 usuarios.put('/', controllerUsuario.alterarUsuario)
 usuarios.delete('/',controllerUsuario.excluirUsuario)
 
 
-usuarios.get('/buscar/:nome', controllerUsuario.buscarUsuario)
+// usuarios.get('/buscar/:nome', controllerUsuario.buscarUsuario)
 
 module.exports = usuarios;

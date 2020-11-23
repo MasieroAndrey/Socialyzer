@@ -152,14 +152,35 @@ module.exports = () => {
 
     //metodo selecionar 2 randons
 
-
-    controller.buscarUsuario = (req, res) => {
-        const { cpf } = req.params
-
-        res.status(200).json(usuarios.filter((usuario) => {
-            return usuario.cpf === cpf;
-        }))
+    controller.buscaUsarioNome =(req,res)=>{
+        var { nome } = req.params
+        collectionUsuario.find({Nome: nome}).toArray((err, items) => {
+            res.status(200).json(items);
+          })
+        console.log(req.params)
     }
+    controller.buscarUsuarioEmail =(req,res)=>{
+        var { email } = req.params
+        collectionUsuario.find({Email: email}).toArray((err, items) => {
+            res.status(200).json(items);
+          })
+        console.log(req.params)
+    }
+    controller.buscarUsuarioCpf =(req,res)=>{
+        var { cpf } = req.params
+        collectionUsuario.findOne({Cpf: cpf}, (err, items) => {
+            res.status(200).json(items);
+          })
+        console.log(req.params)
+    }
+
+    // controller.buscarUsuario = (req, res) => {
+       
+
+    //     res.status(200).json(usuarios.filter((usuario) => {
+    //         return usuario.cpf === cpf;
+    //     }))
+    // }
 
     controller.validarUsuario = (req, res, next) => {
         if (true) {
