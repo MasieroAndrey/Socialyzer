@@ -14,19 +14,19 @@ module.exports = () => {
     const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
     const client = new MongoClient(uri, { useNewUrlParser: true });
     client.connect(err => {
-        if (err) { 
-            console.log(err) 
-        } 
+        if (err) {
+            console.log(err)
+        }
         const db = client.db('theminers')
-        collectionInteresse =db.collection('interesse')
+        collectionInteresse = db.collection('interesse')
     });
 
 
     controller.listarInteresse = (req, res) => {
-        collectionInteresse.find().toArray((err,interesses)=>{
-            res.status(200).json(interesses);
+        collectionInteresse.find().toArray((err, items) => {
+            res.status(200).json(items);
         })
-       
+
 
     }
     controller.povoarInteresse = (req, res) => {
@@ -39,18 +39,33 @@ module.exports = () => {
         interesseobj.IdInteresse = contador()
         interesseobj.NomeInteresse = req.body.NomeInteresse
 
-        collectionInteresse.insertOne(interesseobj,(err,result) =>{
-            if(err){
-                console.log(err)
-            }else{
-                console.log("salvou interesse")
-            }
+        collectionInteresse.insertOne(interesseobj, (err, result) => {
+            res.status(200).send()
         })
 
-       
-        res.status(200).send()
+
+
     };
 
+    controller.buscarInteresseNome = (req, res) => {
+
+        var { nome } = req.params
+
+        collectionInteresse.find({ NomeInteresse: nome }).toArray((err, items) => {
+            res.status(200).json(items);
+        })
+        
+        console.log(req.params)
+    }
+
+
+    controller.buscarInteresseId =(req,res)=>{
+        var { id } = req.params
+        collectionInteresse.find({ _id: ObjectID(id) }).toArray((err, items) => {
+            res.status(200).json(items);
+        })
+        console.log(req.params)
+    }
 
 
 
@@ -58,18 +73,18 @@ module.exports = () => {
         var interesse = req.body
         var id = interesse._id;
         delete interesse._id;
-        collectionInteresse.updateOne({_id: ObjectID(id)}, {$set: interesse}, (err, item) => {
+        collectionInteresse.updateOne({ _id: ObjectID(id) }, { $set: interesse }, (err, item) => {
             console.log(interesse)
             console.log(id)
-          })
- 
+        })
+
         res.status(200).send()
     };
     controller.excluirInteresse = (req, res) => {
-        collectionInteresse.deleteOne({_id: ObjectID(req.body._id)}, (err, item) => {
+        collectionInteresse.deleteOne({ _id: ObjectID(req.body._id) }, (err, item) => {
             console.log(req.body)
-          })
-          res.status(200).send()
+        })
+        res.status(200).send()
     };
 
     function povoar() {
