@@ -6,7 +6,7 @@ module.exports = () => {
     const interesses = require('../data/interesses')
     const eventos = require('../data/eventos')
     const usuarios = require('../data/usuarios');
-
+    const ObjectID = require('mongojs').ObjectId
 
     const MongoClient = require('mongodb').MongoClient;
 
@@ -55,8 +55,14 @@ module.exports = () => {
 
 
     controller.alterarInteresse = (req, res) => {
-        const index = req.body.IdInteresse
-        interesses[index - 1] = req.body
+        var interesse = req.body
+        var id = interesse._id;
+        delete interesse._id;
+        collectionInteresse.updateOne({_id: ObjectID(id)}, {$set: interesse}, (err, item) => {
+            console.log(interesse)
+            console.log(id)
+          })
+ 
         res.status(200).send()
     };
     controller.excluirInteresse = (req, res) => {
