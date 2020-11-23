@@ -1,5 +1,6 @@
 const { NOMEM } = require('dns');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+
 
 
 
@@ -11,10 +12,32 @@ module.exports = () => {
     const interesses = require('../data/interesses')
     const eventos = require('../data/eventos')
     const usuarios = require('../data/usuarios');
+    const ObjectID = require('mongojs').ObjectId
+    const MongoClient = require('mongodb').MongoClient;
+
+    var collectionUsuario
+    const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+        if (err) { 
+            console.log(err) 
+        } 
+        const db = client.db('theminers')
+        collectionUsuario =db.collection('usuario')
+    });
+
+
+    controller.listarUsuarios = (req, res) => {
+        collectionUsuario.find().toArray((err,usuarios)=>{
+            res.status(200).json(usuarios);
+        })
+       
+
+    }
 
 
 
-    controller.listarUsuarios = (req, res) => res.status(200).json(usuarios);
+
     
     controller.index = (req, res) => {  
         res.render('index.ejs',{name : '#'})
@@ -54,8 +77,15 @@ module.exports = () => {
             userobj.Descricao = req.body.Descricao,
             userobj.Email = req.body.email,
             userobj.Senha = hashedPassword,
-            userobj.ListaInteresse = selecionaInteresse(bolinho),
-            usuarios.push(userobj)
+            // userobj.ListaInteresse = selecionaInteresse(bolinho),
+           
+            collectionUsuario.insertOne(userobj,(err,result) =>{
+                if(err){
+                    console.log(err)
+                }else{
+                    console.log("salvou interesse")
+                }
+            })
             
             
         }catch{
@@ -84,16 +114,16 @@ module.exports = () => {
         
     }
 
-    function selecionaInteresse(bolinho) {
-        var retornoInteresse = []
-        for (let index = 0; index < bolinho.length; index++) {
-            if (bolinho[index] == interesses[index].NomeInteresse) {
-                retornoInteresse.push(interesses[index])
-            }
+    // function selecionaInteresse(bolinho) {
+    //     var retornoInteresse = []
+    //     for (let index = 0; index < bolinho.length; index++) {
+    //         if (bolinho[index] == interesses[index].NomeInteresse) {
+    //             retornoInteresse.push(interesses[index])
+    //         }
 
-        }
-        return retornoInteresse
-    }
+    //     }
+    //     return retornoInteresse
+    // }
 
 
 
@@ -104,8 +134,15 @@ module.exports = () => {
 
 
     controller.alterarUsuario = (req, res) => {
-        const index = req.body.Idusuario
-        usuarios[index - 1] = req.body
+        var usuario = req.body
+        var Cpf = usuario.Cpf;
+        delete usuario._id;
+        console.log(req.body._id)
+        collectionUsuario.updateOne({Cpf: Cpf}, {$set: usuario}, (err, item) => {
+            console.log(usuario)
+            console.log(Cpf)
+          })
+ 
         res.status(200).send()
     };
     controller.excluirUsuario = (req, res) => {
