@@ -127,12 +127,6 @@ module.exports = () => {
 
 
 
-
-
-
-
-
-
     controller.alterarUsuario = (req, res) => {
         var usuario = req.body
         var Cpf = usuario.Cpf;
@@ -145,10 +139,14 @@ module.exports = () => {
  
         res.status(200).send()
     };
+
     controller.excluirUsuario = (req, res) => {
-        const index = req.params.Idusuario
-        usuarios.splice(index - 1, 1)
-        res.status(200).send()
+        var usuario = req.body
+        console.log(usuario)
+        collectionUsuario.deleteOne({Cpf: usuario.Cpf}, (err, item) => {
+            console.log(usuario)
+          })
+          res.status(200).send()
     };
 
 

@@ -18,7 +18,7 @@ usuarios.post('/upload', controllerUsuario.upload)
 usuarios.get('/', controllerUsuario.listarUsuarios)
 // usuarios.post('/', controllerUsuario.salvarUsuario)
 usuarios.put('/', controllerUsuario.alterarUsuario)
-usuarios.delete('/:Idusuario',controllerUsuario.excluirUsuario)
+usuarios.delete('/',controllerUsuario.excluirUsuario)
 
 
 usuarios.get('/buscar/:nome', controllerUsuario.buscarUsuario)
