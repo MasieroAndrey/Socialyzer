@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "-": "0.0.1",
+    "axios": "^0.21.0",
     "bcrypt": "^5.0.0",
     "bootstrap": "^4.5.2",
     "ejs": "^3.1.5",

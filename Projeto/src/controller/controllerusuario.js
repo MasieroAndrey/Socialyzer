@@ -14,7 +14,7 @@ module.exports = () => {
     const usuarios = require('../data/usuarios');
     const ObjectID = require('mongojs').ObjectId
     const MongoClient = require('mongodb').MongoClient;
-
+    const axios = require('axios');
     var collectionUsuario
     const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
     const client = new MongoClient(uri, { useNewUrlParser: true });
@@ -57,7 +57,7 @@ module.exports = () => {
             const hashedPassword = await bcrypt.hash(req.body.password, 10)
             var user = new Usuario()
             var userobj = serialize.unserialize(user)
-            var bolinho = [req.body.Hackathon,
+            var listInsteresseUsuario = [req.body.Hackathon,
             req.body.Futebol,
             req.body.Jogos,
             req.body.Animes,
@@ -69,7 +69,6 @@ module.exports = () => {
             req.body.Exercicio,
             ]
 
-            userobj.Idusuario = contador(),
             userobj.Nome = req.body.name,
             userobj.DataNascimento = req.body.DataNascimento,
             userobj.Sexo = req.body.Sexo,
@@ -77,7 +76,10 @@ module.exports = () => {
             userobj.Descricao = req.body.Descricao,
             userobj.Email = req.body.email,
             userobj.Senha = hashedPassword,
-            // userobj.ListaInteresse = selecionaInteresse(bolinho),
+            userobj.ListaInteresse = RetornoApiInteresse(listInsteresseUsuario),
+            console.log(RetornoApiInteresse(listInsteresseUsuario))
+            
+
            
             collectionUsuario.insertOne(userobj,(err,result) =>{
                 if(err){
@@ -114,16 +116,30 @@ module.exports = () => {
         
     }
 
-    // function selecionaInteresse(bolinho) {
-    //     var retornoInteresse = []
-    //     for (let index = 0; index < bolinho.length; index++) {
-    //         if (bolinho[index] == interesses[index].NomeInteresse) {
-    //             retornoInteresse.push(interesses[index])
-    //         }
+    async function RetornoApiInteresse(listInsteresseUsuario){
+    
+        const api = await returnJson()
+            var retornoInteresse = []
+            for (let index = 0; index < listInsteresseUsuario.length; index++) {
+                if (listInsteresseUsuario[index] == api.data[index].NomeInteresse) {
+                    retornoInteresse.push(api.data[index].NomeInteresse)
+                    console.log(api.data[index].NomeInteresse)
+                }
+    
+            }
+            return retornoInteresse
+        
+    }
+    
 
-    //     }
-    //     return retornoInteresse
-    // }
+
+    async function returnJson(){
+        const responde = await axios.get('http://localhost:3331/interesse/')
+        return responde
+    }
+    
+
+
 
 
 
@@ -173,14 +189,8 @@ module.exports = () => {
           })
         console.log(req.params)
     }
-
-    // controller.buscarUsuario = (req, res) => {
-       
-
-    //     res.status(200).json(usuarios.filter((usuario) => {
-    //         return usuario.cpf === cpf;
-    //     }))
-    // }
+    
+   
 
     controller.validarUsuario = (req, res, next) => {
         if (true) {
@@ -228,18 +238,6 @@ module.exports = () => {
 
 
 
-
-    function contador() {
-        if (usuarios.length == 0) {
-            return 1
-        } else {
-            var teste = new Usuario()
-            teste = usuarios[usuarios.length - 1]
-            return teste.Idusuario + 1
-        }
-
-
-    }
 
 
     return controller;
