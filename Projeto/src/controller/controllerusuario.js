@@ -57,17 +57,7 @@ module.exports = () => {
             const hashedPassword = await bcrypt.hash(req.body.password, 10)
             var user = new Usuario()
             var userobj = serialize.unserialize(user)
-            var listInsteresseUsuario = [req.body.Hackathon,
-            req.body.Futebol,
-            req.body.Jogos,
-            req.body.Animes,
-            req.body.Filmes,
-            req.body.Series,
-            req.body.Carros,
-            req.body.Cozinhar,
-            req.body.Ler,
-            req.body.Exercicio,
-            ]
+            var listInsteresseUsuario = req.body.Interesses
 
             userobj.Nome = req.body.name,
             userobj.DataNascimento = req.body.DataNascimento,
@@ -76,8 +66,8 @@ module.exports = () => {
             userobj.Descricao = req.body.Descricao,
             userobj.Email = req.body.email,
             userobj.Senha = hashedPassword,
-            userobj.ListaInteresse = RetornoApiInteresse(listInsteresseUsuario),
-            console.log(RetornoApiInteresse(listInsteresseUsuario))
+            userobj.ListaInteresse = listInsteresseUsuario,
+            console.log(userobj.ListaInteresse)
             
 
            
@@ -116,27 +106,27 @@ module.exports = () => {
         
     }
 
-    async function RetornoApiInteresse(listInsteresseUsuario){
+    // async function RetornoApiInteresse(listInsteresseUsuario){
     
-        const api = await returnJson()
-            var retornoInteresse = []
-            for (let index = 0; index < listInsteresseUsuario.length; index++) {
-                if (listInsteresseUsuario[index] == api.data[index].NomeInteresse) {
-                    retornoInteresse.push(api.data[index].NomeInteresse)
-                    console.log(api.data[index].NomeInteresse)
-                }
+    //     const api = await returnJson()
+    //         var retornoInteresse = []
+    //         for (let index = 0; index < listInsteresseUsuario.length; index++) {
+    //             if (listInsteresseUsuario[index] == api.data[index].NomeInteresse) {
+    //                 retornoInteresse.push(api.data[index].NomeInteresse)
+    //                 console.log(api.data[index].NomeInteresse)
+    //             }
     
-            }
-            return retornoInteresse
+    //         }
+    //         return retornoInteresse
         
-    }
+    // }
     
 
 
-    async function returnJson(){
-        const responde = await axios.get('http://localhost:3331/interesse/')
-        return responde
-    }
+    // async function returnJson(){
+    //     const responde = await axios.get('http://localhost:3331/interesse/')
+    //     return responde
+    // }
     
 
 
@@ -171,9 +161,10 @@ module.exports = () => {
     controller.buscaUsarioNome =(req,res)=>{
         var { nome } = req.params
         collectionUsuario.find({Nome: nome}).toArray((err, items) => {
+            console.log(items)
             res.status(200).json(items);
           })
-        console.log(req.params)
+        // console.log(req.params)
     }
     controller.buscarUsuarioEmail =(req,res)=>{
         var { email } = req.params
@@ -185,7 +176,14 @@ module.exports = () => {
     controller.buscarUsuarioCpf =(req,res)=>{
         var { cpf } = req.params
         collectionUsuario.findOne({Cpf: cpf}, (err, items) => {
-            res.status(200).json(items);
+                res.status(200).json(items);
+          })
+        console.log(req.params)
+    }
+    controller.listaInteressePorCpf =(req,res)=>{
+        var { cpf } = req.params
+        collectionUsuario.findOne({Cpf: cpf}, (err, items) => {
+                res.status(200).json(items.ListaInteresse);
           })
         console.log(req.params)
     }
