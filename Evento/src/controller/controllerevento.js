@@ -5,10 +5,11 @@ module.exports = app => {
     const Evento = require('../models/evento')
     const Interesse = require('../models/interesse')
 
+    const ObjectID = require('mongojs').ObjectId
+    const axios = require('axios');
 
-    const interesses = require('../data/interesses')
-    const eventos = require('../data/eventos')
-    const usuarios = require('../data/usuarios');
+    const ListUsuario = []
+
 
     var interesseUm
     var interesseDois
@@ -24,34 +25,93 @@ module.exports = app => {
         }
 
         var event = new Evento()
-        event.Idevento = contador()
-        event.NomeEvento = NomeInteresse()
+        // event.Idevento = contador()
+        // event.NomeEvento = NomeInteresse()
         event.Localizacao = req.body.Localizacao
         event.FaixaEtaria = req.body.FaixaEtaria
         event.RankEvento = req.body.RankEvento
         event.NotaEvento = req.body.NotaEvento
-        event.ListaUsuarios = pesquisaUsuarios()
+        RetornoApiInteresse()
+        event.ListaUsuarios = listInteresse
         //relacionamento usuario
         salvarEvento(event)
         res.status(200).send()
 
     }
 
+    async function RetornoApiInteresse() {
 
-    function pesquisaUsuarios() {
-        var array = []
-        usuarios.forEach(user => {
-            user.ListaInteresse.forEach(interesse => {
-                var filtro = array.filter((Usuario, index, array) => Usuario.Idusuario == user.Idusuario)
-                console.log(filtro)
-                if ((interesse.IdInteresse == interesseDois + 1 || interesse.IdInteresse == interesseUm + 1) && filtro.length == 0) {
-                    array.push(user)
+
+        const usuarioList = await returnJsonTodosUsuario()
+
+
+        for (let i = 0; i < usuarioList.data.length; i++) {
+
+            var teste2 = usuarioList.data[i]
+            // console.log(teste2.Nome)
+            for (let j = usuarioList.data.length - 1; j > 0; j--) {
+                // if (i == j) {
+                //     j--
+                // }
+                var teste = usuarioList.data[j]
+                // console.log(teste.Nome)
+                
+
+
+                if (teste.listInteresse == teste2.listInteresse) {
+                    ListUsuario.push(teste.Nome)
+                    console.log(ListUsuario)
+
                 }
+            }
 
-            });
-        });
-        return array
+        }
+
     }
+
+    // async function returnJsonTodosInteresse() {
+    //     const responde = await axios.get('http://localhost:3331/interesse/')
+    //     return responde
+    // }
+    // async function returnJsonUSuario(cpf){
+    //     const responde = await axios.get(`http://localhost:3333/usuario/buscarInteressePorCpf/123`)
+    //     return responde
+    // }
+    async function returnJsonTodosUsuario() {
+        const responde = await axios.get(`http://localhost:3333/usuario/`)
+        return responde
+    }
+    RetornoApiInteresse()
+
+
+    const MongoClient = require('mongodb').MongoClient;
+
+    var collectionEvento
+    const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+        if (err) {
+            console.log(err)
+        }
+        const db = client.db('theminers')
+        collectionEvento = db.collection('evento')
+    });
+
+
+    // function pesquisaUsuarios() {
+    //     var array = []
+    //     usuarios.forEach(user => {
+    //         user.ListaInteresse.forEach(interesse => {
+    //             var filtro = array.filter((Usuario, index, array) => Usuario.Idusuario == user.Idusuario)
+    //             console.log(filtro)
+    //             if ((interesse.IdInteresse == interesseDois + 1 || interesse.IdInteresse == interesseUm + 1) && filtro.length == 0) {
+    //                 array.push(user)
+    //             }
+
+    //         });
+    //     });
+    //     return array
+    // }
 
 
 
@@ -59,26 +119,43 @@ module.exports = app => {
         return interesses[interesseUm].NomeInteresse + " - " + interesses[interesseDois].NomeInteresse
     }
 
+
+
+
     function salvarEvento(objevento) {
-        eventos.push(objevento)
+        collectionEvento.insertOne(objevento, (err, result) => {
+            res.status(200).send()
+        })
 
     };
 
 
-    controller.listarEventos = (req, res) => res.status(200).json(eventos);
+    controller.listarEventos = (req, res) => {
+        collectionEvento.find().toArray((err, items) => {
+            res.status(200).json(items);
+            var teste = "http://localhost:3331/interesse/buscarInteresseId/5fbc09a337a2de238cdd544b"
+            console.log(teste)
+        })
+    }
 
 
     controller.alterarEvento = (req, res) => {
-        const index = req.body.Idevento
-        eventos[index - 1] = req.body
+        var evento = req.body
+        var id = evento._id;
+        delete evento._id;
+        collectionEvento.updateOne({ _id: ObjectID(id) }, { $set: evento }, (err, item) => {
+            console.log(evento)
+            console.log(id)
+        })
 
         res.status(200).send()
     };
+
+
     controller.excluirEvento = (req, res) => {
-        const index = req.body.Idevento
-
-        eventos.splice(index - 1, 1)
-
+        collectionEvento.deleteOne({ _id: ObjectID(req.body._id) }, (err, item) => {
+            console.log(req.body)
+        })
         res.status(200).send()
     };
 
@@ -93,7 +170,7 @@ module.exports = app => {
     }
 
 
-/* Funcao a ser implementada junto com a media de nota dos usuarios*/
+    /* Funcao a ser implementada junto com a media de nota dos usuarios*/
     function calculaNotas() {
 
         const totalDeNotas = eventos.NotaEvento.reduce((totalDeNotas, currentElement) => (totalDeNotas + currentElement))
@@ -106,7 +183,7 @@ module.exports = app => {
 
 
 
-    
+
     // controller.buscarEventos = (req, res) => {
     //     const { numero } = req.params
 
