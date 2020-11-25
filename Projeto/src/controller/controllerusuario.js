@@ -54,7 +54,7 @@ module.exports = () => {
     controller.registrar = async (req, res) => {
 
         try{
-            const hashedPassword = await bcrypt.hash(req.body.password, 10)
+            // const hashedPassword = await bcrypt.hash(req.body.password, 10)
             var user = new Usuario()
             var userobj = serialize.unserialize(user)
             var listInsteresseUsuario = req.body.Interesses
@@ -65,7 +65,7 @@ module.exports = () => {
             userobj.Cpf = req.body.Cpf,
             userobj.Descricao = req.body.Descricao,
             userobj.Email = req.body.email,
-            userobj.Senha = hashedPassword,
+            userobj.Senha = req.body.password,
             userobj.ListaInteresse = listInsteresseUsuario,
             console.log(userobj.ListaInteresse)
             
@@ -89,20 +89,37 @@ module.exports = () => {
 
 
     controller.logar = async (req, res) => {
+
+        // var email = req.body.email
+        // console.log(email)
+            collectionUsuario.findOne({Email: req.body.email}, (err, items) => {
+                
+                if(items == null){
+                    res.status(400).send('Usuario não encontrado')
+                }else{
+                    if(req.body.password === items.Senha){
+                        res.render('index.ejs',{name : items.Nome})
+                    }else{
+                        console.log(items)
+                        res.render('login.ejs')
+                    }
+                }
+                
+          })
+          
         
-        const user = usuarios.find(user => user.email = req.body.email)
-        if(user == null){
-            res.status(400).send('Usuario não encontrado')
-        }
-        try {
-            if(await bcrypt.compare(req.body.password, user.Senha)){
-                res.render('index.ejs',{name : user.Nome})
-            }else{
-                res.render('login.ejs')
-            }
-        } catch {
-            res.status(500).send()
-        }    
+        
+        // const user = usuarios.find(user => user.email = req.body.email)
+        
+        // try {
+        //     if(await bcrypt.compare(req.body.password, user.Senha)){
+        //         res.render('index.ejs',{name : user.Nome})
+        //     }else{
+        //         res.render('login.ejs')
+        //     }
+        // } catch {
+        //     res.status(500).send()
+        // }    
         
     }
 
@@ -121,8 +138,6 @@ module.exports = () => {
         
     // }
     
-
-
     // async function returnJson(){
     //     const responde = await axios.get('http://localhost:3331/interesse/')
     //     return responde
