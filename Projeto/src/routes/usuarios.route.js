@@ -8,7 +8,7 @@ usuarios.get('/login', controllerUsuario.login)
 usuarios.get('/register', controllerUsuario.register)
 usuarios.post('/register', controllerUsuario.registrar)
 usuarios.post('/logar', controllerUsuario.logar)
-
+usuarios.post('/adm', controllerUsuario.adm)
 /*implementado porem nao esta sendo utilizado */
 usuarios.post('/upload', controllerUsuario.upload)
 

@@ -1,6 +1,6 @@
 const { NOMEM } = require('dns');
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
 
 
 
@@ -19,71 +19,74 @@ module.exports = () => {
     const uri = "mongodb+srv://asnnfosed:asnnfosed@cluster0.tfonb.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority";
     const client = new MongoClient(uri, { useNewUrlParser: true });
     client.connect(err => {
-        if (err) { 
-            console.log(err) 
-        } 
+        if (err) {
+            console.log(err)
+        }
         const db = client.db('theminers')
-        collectionUsuario =db.collection('usuario')
+        collectionUsuario = db.collection('usuario')
     });
 
 
     controller.listarUsuarios = (req, res) => {
-        collectionUsuario.find().toArray((err,usuarios)=>{
+        collectionUsuario.find().toArray((err, usuarios) => {
             res.status(200).json(usuarios);
         })
-       
+
 
     }
 
 
 
 
-    
-    controller.index = (req, res) => {  
-        res.render('index.ejs',{name : '#'})
+
+    controller.index = (req, res) => {
+        res.render('index.ejs', { name: '#' })
     }
-    controller.login = (req, res) => {  
+    controller.login = (req, res) => {
         res.render('login.ejs')
     }
     controller.register = (req, res) => {
         res.render('register.ejs')
-
+    }
+    controller.adm = (req, res) => {
+        res.render('adm.ejs')
     }
 
-    
+
     controller.registrar = async (req, res) => {
 
-        try{
+        try {
             // const hashedPassword = await bcrypt.hash(req.body.password, 10)
             var user = new Usuario()
             var userobj = serialize.unserialize(user)
             var listInsteresseUsuario = req.body.Interesses
 
             userobj.Nome = req.body.name,
-            userobj.DataNascimento = req.body.DataNascimento,
-            userobj.Sexo = req.body.Sexo,
-            userobj.Cpf = req.body.Cpf,
-            userobj.Descricao = req.body.Descricao,
-            userobj.Email = req.body.email,
-            userobj.Senha = req.body.password,
-            userobj.ListaInteresse = listInsteresseUsuario,
+                userobj.DataNascimento = req.body.DataNascimento,
+                userobj.Sexo = req.body.Sexo,
+                userobj.Cpf = req.body.Cpf,
+                userobj.Descricao = req.body.Descricao,
+                userobj.Email = req.body.email,
+                userobj.Senha = req.body.password,
+                userobj.ListaInteresse = listInsteresseUsuario,
+                userobj.Condicao = "Comum"
             console.log(userobj.ListaInteresse)
-            
 
-           
-            collectionUsuario.insertOne(userobj,(err,result) =>{
-                if(err){
+
+
+            collectionUsuario.insertOne(userobj, (err, result) => {
+                if (err) {
                     console.log(err)
-                }else{
+                } else {
                     console.log("salvou interesse")
                 }
             })
-            
-            
-        }catch{
+
+
+        } catch {
             console.log("erroo")
         }
-        res.render('index.ejs',{name : userobj.Nome})
+        res.render('index.ejs', { name: userobj.Nome })
     }
 
 
@@ -92,39 +95,55 @@ module.exports = () => {
 
         // var email = req.body.email
         // console.log(email)
-            collectionUsuario.findOne({Email: req.body.email}, (err, items) => {
-                
-                if(items == null){
-                    res.status(400).send('Usuario não encontrado')
-                }else{
-                    if(req.body.password === items.Senha){
-                        res.render('index.ejs',{name : items.Nome})
-                    }else{
-                        console.log(items)
+        collectionUsuario.findOne({ Email: req.body.email }, (err, items) => {
+            if (items == null) {
+                res.status(400).send('Usuario não encontrado')
+            } else {
+                try{
+                    if (req.body.password === items.Senha) {
+                        var id = items._id
+                        if(items.Condicao === "Comum"){
+                            const token = jwt.sign({ id }, "Comum", {
+                                expiresIn: 300 // expires in 5min     
+                            });
+                            jwt.verify(token, "Comum", function (err, decoded) {});
+                            res.render('index.ejs', { name: items.Nome })
+
+                        }else if(items.Condicao === "Adm"){
+                            const token = jwt.sign({ id }, "Adm", {
+                                expiresIn: 300 // expires in 5min              
+                            });
+                            jwt.verify(token, "Adm", function (err, decoded) {});
+                            res.render('adm.ejs', { name: items.Nome })
+
+                        }     
+                    } else {    
                         res.render('login.ejs')
                     }
+                }catch{
+                    res.render('login.ejs')
                 }
                 
-          })
-          
-        
-        
-        // const user = usuarios.find(user => user.email = req.body.email)
-        
-        // try {
-        //     if(await bcrypt.compare(req.body.password, user.Senha)){
-        //         res.render('index.ejs',{name : user.Nome})
-        //     }else{
-        //         res.render('login.ejs')
-        //     }
-        // } catch {
-        //     res.status(500).send()
-        // }    
-        
+            }
+
+        })
+
     }
 
+
+    function token(items) {
+        var id = items._id
+        const token = jwt.sign({ id }, "theminers", {
+            expiresIn: 300 // expires in 5min
+        });
+        console.log(token)
+        return token
+
+    }
+
+
     // async function RetornoApiInteresse(listInsteresseUsuario){
-    
+
     //     const api = await returnJson()
     //         var retornoInteresse = []
     //         for (let index = 0; index < listInsteresseUsuario.length; index++) {
@@ -132,17 +151,17 @@ module.exports = () => {
     //                 retornoInteresse.push(api.data[index].NomeInteresse)
     //                 console.log(api.data[index].NomeInteresse)
     //             }
-    
+
     //         }
     //         return retornoInteresse
-        
+
     // }
-    
+
     // async function returnJson(){
     //     const responde = await axios.get('http://localhost:3331/interesse/')
     //     return responde
     // }
-    
+
 
 
 
@@ -153,57 +172,57 @@ module.exports = () => {
         var Cpf = usuario.Cpf;
         delete usuario._id;
         console.log(req.body._id)
-        collectionUsuario.updateOne({Cpf: Cpf}, {$set: usuario}, (err, item) => {
+        collectionUsuario.updateOne({ Cpf: Cpf }, { $set: usuario }, (err, item) => {
             console.log(usuario)
             console.log(Cpf)
-          })
- 
+        })
+
         res.status(200).send()
     };
 
     controller.excluirUsuario = (req, res) => {
         var usuario = req.body
         console.log(usuario)
-        collectionUsuario.deleteOne({Cpf: usuario.Cpf}, (err, item) => {
+        collectionUsuario.deleteOne({ Cpf: usuario.Cpf }, (err, item) => {
             console.log(usuario)
-          })
-          res.status(200).send()
+        })
+        res.status(200).send()
     };
 
 
     //metodo selecionar 2 randons
 
-    controller.buscaUsarioNome =(req,res)=>{
+    controller.buscaUsarioNome = (req, res) => {
         var { nome } = req.params
-        collectionUsuario.find({Nome: nome}).toArray((err, items) => {
+        collectionUsuario.find({ Nome: nome }).toArray((err, items) => {
             console.log(items)
             res.status(200).json(items);
-          })
+        })
         // console.log(req.params)
     }
-    controller.buscarUsuarioEmail =(req,res)=>{
+    controller.buscarUsuarioEmail = (req, res) => {
         var { email } = req.params
-        collectionUsuario.find({Email: email}).toArray((err, items) => {
+        collectionUsuario.find({ Email: email }).toArray((err, items) => {
             res.status(200).json(items);
-          })
+        })
         console.log(req.params)
     }
-    controller.buscarUsuarioCpf =(req,res)=>{
+    controller.buscarUsuarioCpf = (req, res) => {
         var { cpf } = req.params
-        collectionUsuario.findOne({Cpf: cpf}, (err, items) => {
-                res.status(200).json(items);
-          })
+        collectionUsuario.findOne({ Cpf: cpf }, (err, items) => {
+            res.status(200).json(items);
+        })
         console.log(req.params)
     }
-    controller.listaInteressePorCpf =(req,res)=>{
+    controller.listaInteressePorCpf = (req, res) => {
         var { cpf } = req.params
-        collectionUsuario.findOne({Cpf: cpf}, (err, items) => {
-                res.status(200).json(items.ListaInteresse);
-          })
+        collectionUsuario.findOne({ Cpf: cpf }, (err, items) => {
+            res.status(200).json(items.ListaInteresse);
+        })
         console.log(req.params)
     }
-    
-   
+
+
 
     controller.validarUsuario = (req, res, next) => {
         if (true) {
@@ -217,7 +236,7 @@ module.exports = () => {
         form.parse(req, function (err, fields, files) {
             const { type, name, path, size } = files.arquivo
 
-            console.log("tamanho: "+size)
+            console.log("tamanho: " + size)
 
             if (size > 111110000) {
                 const error = new Error();
@@ -227,13 +246,13 @@ module.exports = () => {
                 return next(error)
             }
 
-            if (type.indexOf("image/png") != -1) {                
+            if (type.indexOf("image/png") != -1) {
                 fsextra.move(files.arquivo.path, './src/storage/' + files.arquivo.name, function (error) {
-                    if (error) {                        
+                    if (error) {
                         //error.httpStatusCode = 400;
                         //return next(error)
                         console.log(error)
-                    }                    
+                    }
                 })
                 res.write('File uploaded');
                 res.end();

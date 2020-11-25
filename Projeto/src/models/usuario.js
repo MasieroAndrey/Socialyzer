@@ -1,6 +1,6 @@
 
 class Usuario {
-    constructor(idusuario,nome,senha,dataNascimento,sexo,cpf,descricao,listInteresse,notausuario, email ) {
+    constructor(idusuario,nome,senha,dataNascimento,sexo,cpf,descricao,listInteresse,notausuario, email, condicao ) {
         this.Idusuario = idusuario
         this.Nome = nome
         this.Senha = senha
@@ -11,6 +11,7 @@ class Usuario {
         this.Descricao = descricao
         this.NotaUsuario = notausuario
         this.ListaInteresse = listInteresse
+        this.Condicao = condicao
     }
 
 }
